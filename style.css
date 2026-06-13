@@ -1,0 +1,152 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  height: 100vh;
+  overflow: hidden;
+  color: #fff;
+}
+
+/* Rozmazané pozadí (zatím jen gradient, můžeš nahradit obrázkem) */
+#background {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, #f5e6b3 0, #c79b5c 30%, #1b1b1b 100%);
+  filter: blur(3px);
+  transform: scale(1.05);
+  z-index: -1;
+}
+
+/* Logo */
+.logo-container {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.logo-icon {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 12px;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #101522, #1b2640);
+  border: 2px solid #ffffff33;
+  position: relative;
+}
+
+/* „Měsíc“ */
+.logo-icon::before {
+  content: "";
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ffffff;
+  top: 18px;
+  left: 26px;
+  box-shadow: 0 0 12px #ffffffaa;
+}
+
+/* „Odrážející se voda“ */
+.logo-icon::after {
+  content: "";
+  position: absolute;
+  width: 70%;
+  height: 18px;
+  left: 15%;
+  bottom: 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4fd1ff55, #ffffff55, #4fd1ff55);
+}
+
+.logo-text {
+  letter-spacing: 0.25em;
+  font-size: 18px;
+}
+
+/* Menu tlačítka */
+.menu {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 260px;
+}
+
+.menu-btn {
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ffffff55;
+  background: #00000066;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+
+.menu-btn:hover {
+  background: #ffffff22;
+  box-shadow: 0 0 10px #000000aa;
+  transform: translateY(-1px);
+}
+
+/* Karty dole */
+.card {
+  position: absolute;
+  padding: 10px 14px;
+  background: #00000088;
+  border-radius: 8px;
+  border: 1px solid #ffffff33;
+  max-width: 260px;
+  font-size: 13px;
+}
+
+.bottom-left {
+  left: 16px;
+  bottom: 16px;
+}
+
+.bottom-right {
+  right: 16px;
+  bottom: 16px;
+}
+
+.card h3 {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.card p {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.small-btn {
+  margin-top: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  background: #3aa6ff;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Verze */
+.version-label {
+  position: absolute;
+  left: 16px;
+  bottom: 4px;
+  font-size: 11px;
+  opacity: 0.8;
+}
