@@ -1,38 +1,43 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <title>Invertfronts</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Můj GitHub Pages Web</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div id="bg"></div>
+    <nav class="navbar">
+        <div class="logo">Můj Web</div>
+        <ul class="menu">
+            <li><a href="#uvod">Úvod</a></li>
+            <li><a href="#info">Informace</a></li>
+            <li><a href="#kontakt">Kontakt</a></li>
+        </ul>
+    </nav>
 
-  <div class="logo">
-    <div class="logo-icon"></div>
-    <h1>INVERTFRONTS</h1>
-  </div>
+    <header id="uvod" class="hero">
+        <h1>Vítej na mém GitHub Pages webu</h1>
+        <p>Tento template je připravený k okamžitému použití.</p>
+        <button id="btn">Vyzkoušet tlačítko</button>
+        <p id="output"></p>
+    </header>
 
-  <div class="menu">
-    <button id="single">Singleplayer</button>
-    <button id="multi">Multiplayer</button>
-    <button id="store">Store</button>
-  </div>
+    <section id="info" class="section">
+        <h2>Informace</h2>
+        <p>Tady můžeš napsat cokoliv o svém projektu, týmu nebo stránce.</p>
+    </section>
 
-  <div class="card left">
-    <h3>Free Quest</h3>
-    <p>Získej odměnu za splnění úkolu.</p>
-    <button class="small">Complete Quest</button>
-  </div>
+    <section id="kontakt" class="section">
+        <h2>Kontakt</h2>
+        <p>Email: tvoje@email.cz</p>
+    </section>
 
-  <div class="card right">
-    <h3>Invertfronts Cloaks</h3>
-    <p>Nové pláště dostupné v obchodě.</p>
-  </div>
+    <footer>
+        <p>© 2026 – Tvůj GitHub Pages Web</p>
+    </footer>
 
-  <div class="version">Invertfronts 0.1.0</div>
-
-  <script src="main.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
