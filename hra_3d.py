@@ -1,20 +1,41 @@
+import sys
+import math
+import random
+
 import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import math
-import random
 
-# Inicializace
-pygame.init()
 display = (800, 600)
-pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
-pygame.display.set_caption("3D Hra - Letadlo")
 
-# Nastavení OpenGL
-gluPerspective(45, (display[0] / display[1]), 0.1, 500.0)
-glTranslatef(0.0, -1.0, -5.0)
-glEnable(GL_DEPTH_TEST)
+
+def init_game():
+    """Inicializuje pygame a OpenGL. Vyvolá RuntimeError, pokud se něco nepodaří."""
+    # pygame.init() vrací dvojici (úspěchy, selhání). Selhání se dříve tiše
+    # ignorovala. Nekritické moduly (např. zvuk) hru nezastaví, ale problém
+    # nahlásíme, místo abychom ho tiše spolkli.
+    successes, failures = pygame.init()
+    if failures:
+        print(
+            f"Varování: {failures} z {successes + failures} modulů pygame se "
+            "nepodařilo inicializovat; pokračuji bez nich.",
+            file=sys.stderr,
+        )
+
+    # Zobrazovací subsystém je pro hru nezbytný – jeho selhání je fatální.
+    try:
+        pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+    except pygame.error as exc:
+        raise RuntimeError(f"Nepodařilo se vytvořit OpenGL okno: {exc}") from exc
+
+    pygame.display.set_caption("3D Hra - Letadlo")
+
+    # Nastavení OpenGL
+    gluPerspective(45, (display[0] / display[1]), 0.1, 500.0)
+    glTranslatef(0.0, -1.0, -5.0)
+    glEnable(GL_DEPTH_TEST)
+
 
 class Letadlo:
     def __init__(self):
@@ -123,64 +144,85 @@ def detect_collision(letadlo, asteroid):
     distance = math.sqrt(dx**2 + dy**2 + dz**2)
     return distance < (letadlo.size + asteroid.size)
 
-# Hlavní smyčka
-letadlo = Letadlo()
-asteroidy = [Asteroid() for _ in range(5)]
-skore = 0
-game_over = False
-clock = pygame.time.Clock()
 
-print("🚀 3D HRA - VYHNI SE ASTEROIDŮM")
-print("Klávesy: ŠIPKY pro pohyb, ESC pro exit")
-print("=" * 40)
+def run_game():
+    """Hlavní herní smyčka. Vrací dosažené skóre."""
+    letadlo = Letadlo()
+    asteroidy = [Asteroid() for _ in range(5)]
+    skore = 0
+    game_over = False
+    clock = pygame.time.Clock()
 
-running = True
-while running:
-    clock.tick(60)
-    
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == KEYDOWN:
-            if event.key == K_ESCAPE:
+    print("🚀 3D HRA - VYHNI SE ASTEROIDŮM")
+    print("Klávesy: ŠIPKY pro pohyb, ESC pro exit")
+    print("=" * 40)
+
+    running = True
+    while running:
+        clock.tick(60)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 running = False
-    
-    # Ovládání
-    keys = pygame.key.get_pressed()
-    if keys[K_LEFT]:
-        letadlo.move(-0.1, 0, 0)
-    if keys[K_RIGHT]:
-        letadlo.move(0.1, 0, 0)
-    if keys[K_UP]:
-        letadlo.move(0, 0.1, 0)
-    if keys[K_DOWN]:
-        letadlo.move(0, -0.1, 0)
-    
-    # Aktualizace asteroidů
-    for asteroid in asteroidy:
-        asteroid.update()
-        if asteroid.z > 1:
-            asteroidy.remove(asteroid)
-            asteroidy.append(Asteroid())
-            skore += 1
-        
-        # Detekce kolize
-        if detect_collision(letadlo, asteroid):
-            game_over = True
-    
-    # Vykreslování
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glClearColor(0.05, 0.05, 0.1, 1)
-    
-    letadlo.draw()
-    for asteroid in asteroidy:
-        asteroid.draw()
-    
-    pygame.display.flip()
-    
-    if game_over:
-        print(f"\n💥 GAME OVER! Skóre: {skore}")
-        break
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
 
-pygame.quit()
-print("Hra skončila!")
+        # Ovládání
+        keys = pygame.key.get_pressed()
+        if keys[K_LEFT]:
+            letadlo.move(-0.1, 0, 0)
+        if keys[K_RIGHT]:
+            letadlo.move(0.1, 0, 0)
+        if keys[K_UP]:
+            letadlo.move(0, 0.1, 0)
+        if keys[K_DOWN]:
+            letadlo.move(0, -0.1, 0)
+
+        # Aktualizace asteroidů (iterujeme přes kopii, abychom mohli
+        # bezpečně měnit seznam během průchodu)
+        for asteroid in list(asteroidy):
+            asteroid.update()
+            if asteroid.z > 1:
+                asteroidy.remove(asteroid)
+                asteroidy.append(Asteroid())
+                skore += 1
+
+            # Detekce kolize
+            if detect_collision(letadlo, asteroid):
+                game_over = True
+
+        # Vykreslování
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glClearColor(0.05, 0.05, 0.1, 1)
+
+        letadlo.draw()
+        for asteroid in asteroidy:
+            asteroid.draw()
+
+        pygame.display.flip()
+
+        if game_over:
+            print(f"\n💥 GAME OVER! Skóre: {skore}")
+            break
+
+    return skore
+
+
+def main():
+    try:
+        init_game()
+        run_game()
+    finally:
+        # Uklidíme vždy, i když nastala výjimka během inicializace nebo hry,
+        # aby okno/subsystémy pygame nezůstaly viset.
+        pygame.quit()
+    print("Hra skončila!")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except RuntimeError as exc:
+        print(f"Chyba: {exc}", file=sys.stderr)
+        sys.exit(1)
