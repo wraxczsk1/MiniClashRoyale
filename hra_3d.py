@@ -4,6 +4,44 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 import math
 import random
+from contextlib import contextmanager
+
+
+@contextmanager
+def push_matrix():
+    """Uloží a obnoví aktuální matici kolem vykreslení objektu."""
+    glPushMatrix()
+    try:
+        yield
+    finally:
+        glPopMatrix()
+
+
+def distance3d(a, b):
+    """Euklidovská vzdálenost mezi dvěma objekty s atributy x, y, z."""
+    return math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2)
+
+
+class Entity:
+    """Základ pro objekty ve scéně se společnou pozicí a velikostí."""
+
+    def __init__(self, x, y, z, size):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.size = size
+
+    def render(self, color, rotation=None):
+        with push_matrix():
+            glTranslatef(self.x, self.y, self.z)
+            if rotation is not None:
+                glRotatef(rotation, 1, 1, 1)
+            glColor3f(*color)
+            self.draw_shape()
+
+    def draw_shape(self):
+        raise NotImplementedError
+
 
 # Inicializace
 pygame.init()
@@ -16,21 +54,14 @@ gluPerspective(45, (display[0] / display[1]), 0.1, 500.0)
 glTranslatef(0.0, -1.0, -5.0)
 glEnable(GL_DEPTH_TEST)
 
-class Letadlo:
+class Letadlo(Entity):
     def __init__(self):
-        self.x = 0
-        self.y = 0
-        self.z = 0
-        self.size = 0.3
-    
+        super().__init__(0, 0, 0, 0.3)
+
     def draw(self):
-        glPushMatrix()
-        glTranslatef(self.x, self.y, self.z)
-        glColor3f(0.0, 1.0, 0.0)  # Zelená
-        self.draw_pyramid()
-        glPopMatrix()
-    
-    def draw_pyramid(self):
+        self.render((0.0, 1.0, 0.0))  # Zelená
+
+    def draw_shape(self):
         glBegin(GL_TRIANGLES)
         # Přední strana
         glColor3f(0, 1, 0)
@@ -68,25 +99,22 @@ class Letadlo:
         if self.y > 2: self.y = 2
         if self.y < -2: self.y = -2
 
-class Asteroid:
+class Asteroid(Entity):
     def __init__(self):
-        self.x = random.uniform(-3, 3)
-        self.y = random.uniform(-2, 2)
-        self.z = random.uniform(-15, -1)
-        self.size = random.uniform(0.1, 0.4)
+        super().__init__(
+            random.uniform(-3, 3),
+            random.uniform(-2, 2),
+            random.uniform(-15, -1),
+            random.uniform(0.1, 0.4),
+        )
         self.vz = random.uniform(0.05, 0.15)
         self.rotation = 0
-    
+
     def draw(self):
-        glPushMatrix()
-        glTranslatef(self.x, self.y, self.z)
-        glRotatef(self.rotation, 1, 1, 1)
-        glColor3f(0.8, 0.4, 0.2)  # Oranžová
-        self.draw_cube()
-        glPopMatrix()
+        self.render((0.8, 0.4, 0.2), rotation=self.rotation)  # Oranžová
         self.rotation += 2
-    
-    def draw_cube(self):
+
+    def draw_shape(self):
         glBegin(GL_TRIANGLES)
         vertices = [
             [-self.size, -self.size, -self.size],
@@ -117,11 +145,7 @@ class Asteroid:
         self.z += self.vz
 
 def detect_collision(letadlo, asteroid):
-    dx = letadlo.x - asteroid.x
-    dy = letadlo.y - asteroid.y
-    dz = letadlo.z - asteroid.z
-    distance = math.sqrt(dx**2 + dy**2 + dz**2)
-    return distance < (letadlo.size + asteroid.size)
+    return distance3d(letadlo, asteroid) < (letadlo.size + asteroid.size)
 
 # Hlavní smyčka
 letadlo = Letadlo()
